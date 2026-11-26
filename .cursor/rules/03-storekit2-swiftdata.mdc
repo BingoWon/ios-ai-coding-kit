@@ -1,0 +1,18 @@
+---
+description: "StoreKit 2 commerce patterns and SwiftData persistence / schema migration guardrails."
+globs: "**/*.swift"
+alwaysApply: false
+---
+# StoreKit 2 & SwiftData Guardrails
+
+## StoreKit 2 (Subscriptions & In-App Purchases)
+1. **Use StoreKit 2 APIs**: Use `Product.products(for:)`, `product.purchase()`, `Transaction.currentEntitlements`, and `Transaction.updates` instead of legacy `SKPaymentQueue` unless explicitly maintaining StoreKit 1 code.
+2. **Listen at App Launch**: Start a long-lived `Task` observing `Transaction.updates` at app startup so renewals, Ask to Buy approvals, and cross-device purchases are always processed.
+3. **Verify Before Unlocking**: Always unwrap `VerificationResult` (`.verified(let transaction)` vs `.unverified`), update entitlements, and call `await transaction.finish()` only after granting access.
+4. **Restore & Manage UI**: Provide a visible **Restore Purchases** action (`try await AppStore.sync()`) and **Manage Subscription** link (`manageSubscriptionsSheet` or `AppStore.showManageSubscriptions`) — required by App Store Review.
+
+## SwiftData
+1. **Versioned Schemas From Day 1**: Wrap production models in `VersionedSchema` + `SchemaMigrationPlan` before shipping so future property renames or relationship changes do not crash existing users on upgrade.
+2. **Background Writes via `@ModelActor`**: Run bulk imports and network syncs inside a `@ModelActor` actor rather than blocking `@MainActor`. Never pass `@Model` objects across actor boundaries — pass `PersistentIdentifier` instead.
+3. **CloudKit Compatibility (if enabled)**: Avoid `@Attribute(.unique)`, give every non-optional property a default value, and make relationships optional with explicit inverse relations.
+4. **Predicate Limits**: Keep `#Predicate` expressions simple and verify supported operators against official Apple docs (avoid custom Swift functions or complex enum pattern matching inside `#Predicate`).

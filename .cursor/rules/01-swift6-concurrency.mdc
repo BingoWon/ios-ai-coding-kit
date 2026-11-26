@@ -1,0 +1,14 @@
+---
+description: "Swift 6 strict concurrency, actor isolation, Sendable safety, and structured async patterns."
+globs: "**/*.swift"
+alwaysApply: false
+---
+# Swift 6 Strict Concurrency Rules
+
+1. **Zero Warning Tolerance**: Write code that compiles cleanly under Swift 6 language mode (`SWIFT_STRICT_CONCURRENCY = complete`). Never suppress isolation errors with `nonisolated(unsafe)` or `@unchecked Sendable` unless synchronization (e.g., `OSAllocatedUnfairLock` or `Mutex`) is explicitly implemented and documented.
+2. **UI Isolation**: Annotate SwiftUI view models, presentation stores, and UIKit controllers with `@MainActor`. Never mutate UI state from background tasks or detached closures.
+3. **Structured Concurrency First**:
+   - Prefer `async let`, `withTaskGroup`, and SwiftUI `.task(id:)` over `Task.detached`.
+   - Always check or propagate cancellation (`try Task.checkCancellation()` or `Task.isCancelled`) inside loops, pagination, and network retry logic.
+4. **Value Types Across Boundaries**: Prefer immutable `struct` and `enum` models conforming to `Sendable` when passing data between actors. Avoid passing `NSManagedObject` or non-`Sendable` SwiftData `@Model` instances across actor boundaries — pass `PersistentIdentifier` or immutable DTOs instead.
+5. **Avoid Legacy Bridges**: Prefer modern `async`/`await` APIs (`URLSession.shared.data(for:)`, `AsyncStream`) over completion handlers and `DispatchQueue.main.async` unless wrapping a C/Objective-C callback with `withCheckedThrowingContinuation` (resumed on every path exactly once).

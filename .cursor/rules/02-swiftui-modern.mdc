@@ -1,0 +1,26 @@
+---
+description: "Modern SwiftUI architecture, @Observable state management, NavigationStack, layout, and performance."
+globs: "**/*.swift"
+alwaysApply: false
+---
+# Modern SwiftUI Rules
+
+1. **Observation Over ObservableObject**:
+   - On iOS 17+ / macOS 14+, use `@Observable` classes with `@State` for owned models and `@Bindable` when two-way bindings are needed.
+   - Do not mix `@ObservedObject` / `@StateObject` / `@Published` into new `@Observable` code unless targeting iOS 16 or earlier.
+2. **Modern Navigation**:
+   - Always use `NavigationStack` or `NavigationSplitView` with value-based `navigationDestination(for:)` and typed `NavigationPath`.
+   - Never introduce deprecated `NavigationView`.
+3. **Modern Modifiers Over Deprecated Equivalents**:
+   - Use `.foregroundStyle(...)` instead of `.foregroundColor(...)`.
+   - Use `.clipShape(.rect(cornerRadius:))` instead of `.cornerRadius(...)`.
+   - Use two-parameter or zero-parameter `.onChange(of:initial:_:)` instead of the deprecated single-parameter `.onChange(of:perform:)`.
+   - Use `ContentUnavailableView` for empty/search/error states on iOS 17+.
+   - Use `Button` (not `.onTapGesture`) for interactive actions so VoiceOver, keyboard navigation, and press states work automatically.
+4. **Performance & View Composition**:
+   - Keep `var body: some View` small and focused (target < 60 lines); extract cohesive subviews into `struct`s rather than giant computed properties.
+   - Never perform disk I/O, JSON decoding, or network calls inside `init` or `body`.
+   - Use `LazyVStack` / `LazyHStack` / `List` for large collections with stable, unique `Identifiable` IDs (never array indices when rows mutate).
+5. **Availability & Accessibility**:
+   - Verify minimum deployment target before adopting newer SDK modifiers; guard newer APIs with `if #available(...)` and a clean fallback.
+   - Support Dynamic Type (avoid fixed heights clipping text), Dark Mode (use semantic colors), and meaningful `accessibilityLabel`s on icon-only controls.
